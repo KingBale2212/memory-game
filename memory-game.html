@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Game - Lật thẻ nhớ</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(160deg, #1e293b, #0f172a);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      color: #38bdf8;
+    }
+
+    #game-board {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      gap: 10px;
+    }
+
+    .card {
+      width: 100px;
+      height: 100px;
+      background: #1e293b;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      cursor: pointer;
+      transition: transform 0.3s, background 0.3s;
+    }
+
+    .card.flipped {
+      background: #38bdf8;
+      transform: rotateY(180deg);
+      cursor: default;
+    }
+
+    #reset-btn {
+      margin-top: 20px;
+      background: #38bdf8;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    #reset-btn:hover {
+      background: #0ea5e9;
+    }
+
+    .score {
+      margin-top: 15px;
+      font-size: 18px;
+      color: #a5f3fc;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧠 Memory Game</h1>
+  <div id="game-board"></div>
+  <button id="reset-btn">Chơi lại</button>
+  <div class="score">Lượt: <span id="moves">0</span></div>
+
+  <script>
+    const board = document.getElementById('game-board');
+    const movesEl = document.getElementById('moves');
+    const resetBtn = document.getElementById('reset-btn');
+
+    const emojis = ['🍎', '🍌', '🍇', '🍓', '🍍', '🥝', '🍒', '🍉'];
+    let cards = [];
+    let flipped = [];
+    let moves = 0;
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function initGame() {
+      board.innerHTML = '';
+      moves = 0;
+      movesEl.textContent = moves;
+      flipped = [];
+      cards = [...emojis, ...emojis];
+      shuffle(cards);
+
+      cards.forEach((emoji, index) => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.dataset.value = emoji;
+        card.addEventListener('click', () => flipCard(card));
+        board.appendChild(card);
+      });
+    }
+
+    function flipCard(card) {
+      if (card.classList.contains('flipped') || flipped.length === 2) return;
+
+      card.classList.add('flipped');
+      card.textContent = card.dataset.value;
+      flipped.push(card);
+
+      if (flipped.length === 2) {
+        moves++;
+        movesEl.textContent = moves;
+
+        const [c1, c2] = flipped;
+        if (c1.dataset.value === c2.dataset.value) {
+          flipped = [];
+          checkWin();
+        } else {
+          setTimeout(() => {
+            c1.classList.remove('flipped');
+            c2.classList.remove('flipped');
+            c1.textContent = '';
+            c2.textContent = '';
+            flipped = [];
+          }, 800);
+        }
+      }
+    }
+
+    function checkWin() {
+      const allFlipped = [...document.querySelectorAll('.card')].every(card => card.classList.contains('flipped'));
+      if (allFlipped) {
+        setTimeout(() => alert(`🎉 Bạn đã thắng sau ${moves} lượt!`), 200);
+      }
+    }
+
+    resetBtn.addEventListener('click', initGame);
+    initGame();
+  </script>
+</body>
+</html>
